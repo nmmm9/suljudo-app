@@ -13,29 +13,71 @@ import {
 } from '@/lib/answers';
 import QuestionField from './QuestionField';
 import Summary from './Summary';
+import Gate, { type Session } from './Gate';
+import Compare from './Compare';
 
 const NAME_KEY = '__name';
+const SESSION_KEY = 'suljudo-session';
+/** 손을 멈춘 뒤 이만큼 지나면 서버에 올린다. 타이핑마다 올리지 않는다. */
+const SYNC_DELAY_MS = 1500;
 
 export default function Survey() {
+  const [session, setSession] = useState<Session | null>(null);
   const [answers, setAnswers] = useState<Answers>({});
   const [cur, setCur] = useState(0);
   const [result, setResult] = useState<'closed' | 'list' | 'ai'>('closed');
   const [menu, setMenu] = useState(false);
+  const [compare, setCompare] = useState(false);
   const [toast, setToast] = useState('');
   const [ready, setReady] = useState(false);
+  const [sync, setSync] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const fileRef = useRef<HTMLInputElement>(null);
+  const dirty = useRef(false);
 
-  // 저장된 답 복원. 브라우저에만 남는다.
+  // 지난 세션 복원. 토큰이 아직 살아 있으면 서버에서 최신 답을 받아온다.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setAnswers(JSON.parse(saved) as Answers);
-    } catch {
-      /* 시크릿 모드 등에서 읽기 실패 — 빈 상태로 시작한다 */
-    }
-    setReady(true);
+    let alive = true;
+    (async () => {
+      let saved: Session | null = null;
+      try {
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (raw) saved = JSON.parse(raw) as Session;
+      } catch {
+        /* 읽기 실패하면 로그인 화면으로 */
+      }
+      if (!saved?.token) {
+        if (alive) setReady(true);
+        return;
+      }
+      try {
+        const res = await fetch('/api/answers', { headers: { Authorization: `Bearer ${saved.token}` } });
+        if (!alive) return;
+        if (res.ok) {
+          const data = await res.json();
+          setSession(saved);
+          setAnswers(data.answers ?? {});
+        } else {
+          localStorage.removeItem(SESSION_KEY);
+        }
+      } catch {
+        // 오프라인이면 로컬 사본으로 버틴다.
+        if (!alive) return;
+        try {
+          const cached = localStorage.getItem(STORAGE_KEY);
+          if (cached) setAnswers(JSON.parse(cached) as Answers);
+        } catch {
+          /* 무시 */
+        }
+        setSession(saved);
+      }
+      if (alive) setReady(true);
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
+  // 로컬 사본. 서버가 죽어도 답이 날아가지 않게 둔다.
   useEffect(() => {
     if (!ready) return;
     try {
@@ -45,6 +87,26 @@ export default function Survey() {
     }
   }, [answers, ready]);
 
+  // 서버 동기화. 답이 바뀐 뒤 잠깐 조용해지면 통째로 올린다.
+  useEffect(() => {
+    if (!ready || !session || !dirty.current) return;
+    const t = setTimeout(async () => {
+      setSync('saving');
+      try {
+        const res = await fetch('/api/answers', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
+          body: JSON.stringify({ answers }),
+        });
+        setSync(res.ok ? 'saved' : 'failed');
+        if (res.ok) dirty.current = false;
+      } catch {
+        setSync('failed');
+      }
+    }, SYNC_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [answers, ready, session]);
+
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(''), 1800);
@@ -52,6 +114,7 @@ export default function Survey() {
   }, [toast]);
 
   const set = useCallback((key: string, value: Answer | undefined) => {
+    dirty.current = true;
     setAnswers((prev) => {
       if (value === undefined) {
         const { [key]: _drop, ...rest } = prev;
@@ -61,7 +124,7 @@ export default function Survey() {
     });
   }, []);
 
-  const name = typeof answers[NAME_KEY] === 'string' ? (answers[NAME_KEY] as string) : '';
+  const name = session?.name ?? (typeof answers[NAME_KEY] === 'string' ? (answers[NAME_KEY] as string) : '');
   const answered = useMemo(() => totalAnswered(answers), [answers]);
   const counts = useMemo(() => SECTIONS.map((s) => answeredCount(s, answers)), [answers]);
   const section = SECTIONS[cur];
@@ -89,6 +152,7 @@ export default function Survey() {
       if (!parsed || typeof parsed !== 'object') throw new Error('not an object');
       const wrapped = (parsed as { answers?: unknown }).answers;
       const next = (wrapped && typeof wrapped === 'object' ? wrapped : parsed) as Answers;
+      dirty.current = true;
       setAnswers(next);
       setToast('불러왔어요');
     } catch {
@@ -112,13 +176,42 @@ export default function Survey() {
   };
 
   const reset = () => {
-    if (!confirm('모든 답변을 지울까요?')) return;
+    if (!confirm('모든 답변을 지울까요? 서버에 저장된 것도 비워집니다.')) return;
+    dirty.current = true;
     setAnswers({});
     setCur(0);
     setToast('초기화했어요');
   };
 
+  const logout = () => {
+    try {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* 무시 */
+    }
+    setSession(null);
+    setAnswers({});
+    setCur(0);
+  };
+
+  const enter = (s: Session, loaded: Answers, created: boolean) => {
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    } catch {
+      /* 저장 못 해도 이번 방문은 쓸 수 있다 */
+    }
+    dirty.current = false;
+    setSession(s);
+    setAnswers(loaded);
+    setReady(true);
+    setToast(created ? `${s.name}님, 처음이시네요` : `${s.name}님, 이어서 합니다`);
+  };
+
   const sections = buildResult(answers);
+
+  if (!ready) return <p className="boot">불러오는 중입니다…</p>;
+  if (!session) return <Gate onDone={enter} />;
 
   return (
     <>
@@ -131,16 +224,12 @@ export default function Survey() {
                 {answered} / {TOTAL} 답변
               </small>
             </h1>
-            <label className="name">
-              이름
-              <input
-                type="text"
-                value={name}
-                placeholder="입력"
-                autoComplete="off"
-                onChange={(e) => set(NAME_KEY, e.target.value || undefined)}
-              />
-            </label>
+            <div className="who">
+              <b>{name}</b>
+              <span className="sync" data-state={sync}>
+                {sync === 'saving' ? '저장 중' : sync === 'failed' ? '저장 실패' : sync === 'saved' ? '저장됨' : ' '}
+              </span>
+            </div>
           </div>
           <nav className="tabs">
             {SECTIONS.map((s, i) => (
@@ -213,6 +302,9 @@ export default function Survey() {
             <button type="button" className="btn" onClick={() => { setMenu(false); setResult('ai'); }}>
               결과 보기
             </button>
+            <button type="button" className="btn" onClick={() => { setMenu(false); setCompare(true); }}>
+              다 같이 비교
+            </button>
             <button type="button" className="btn" onClick={() => { setMenu(false); download(); }}>
               파일로 저장
             </button>
@@ -221,6 +313,9 @@ export default function Survey() {
             </button>
             <button type="button" className="btn" onClick={() => { setMenu(false); reset(); }}>
               전체 초기화
+            </button>
+            <button type="button" className="btn" onClick={() => { setMenu(false); logout(); }}>
+              나가기
             </button>
             <button type="button" className="btn ghost" onClick={() => setMenu(false)}>
               닫기
@@ -284,6 +379,22 @@ export default function Survey() {
                 텍스트 복사
               </button>
               <button type="button" className="btn" onClick={() => setResult('closed')}>
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {compare && (
+        <div className="sheet" onClick={(e) => e.target === e.currentTarget && setCompare(false)}>
+          <div className="panel wide">
+            <h2>다 같이 비교</h2>
+            <div className="out">
+              <Compare token={session.token} mySlug={session.slug} />
+            </div>
+            <div className="acts">
+              <button type="button" className="btn" onClick={() => setCompare(false)}>
                 닫기
               </button>
             </div>
