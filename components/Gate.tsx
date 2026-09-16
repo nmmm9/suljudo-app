@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import type { Answers } from '@/lib/answers';
-
-export type Session = { name: string; slug: string; token: string };
+import type { Session } from '@/lib/session';
 
 type Props = { onDone: (session: Session, answers: Answers, created: boolean) => void };
 

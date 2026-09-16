@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { SECTIONS } from '@/lib/questions';
+import { SECTIONS, TOTAL } from '@/lib/questions';
 import type { CompareData } from '@/app/api/everyone/route';
 
 type Props = { token: string; mySlug: string };
@@ -25,7 +25,7 @@ export default function Compare({ token, mySlug }: Props) {
           return;
         }
         setData(json as CompareData);
-        setPicked((json as CompareData).people.map((p) => p.slug).slice(0, 6));
+        setPicked((json as CompareData).people.map((p) => p.slug));
       } catch {
         if (alive) setError('연결에 실패했습니다.');
       }
@@ -35,7 +35,7 @@ export default function Compare({ token, mySlug }: Props) {
     };
   }, [token]);
 
-  const rowsForSection = useMemo(() => {
+  const rows = useMemo(() => {
     if (!data) return [];
     const out: { key: string; label: string; heading?: string; cells: string[] }[] = [];
     let heading = '';
@@ -57,6 +57,9 @@ export default function Compare({ token, mySlug }: Props) {
     return out;
   }, [data, picked, onlyDiff, section]);
 
+  /** 이 장에서 사람들이 실제로 답한 문항 수. 표가 짧을 때 왜 짧은지 알려준다. */
+  const sectionTotal = SECTIONS[section].count;
+
   if (error) return <p className="cmp-msg">{error}</p>;
   if (!data) return <p className="cmp-msg">불러오는 중입니다…</p>;
   if (data.people.length === 0) return <p className="cmp-msg">아직 아무도 답하지 않았습니다.</p>;
@@ -66,39 +69,46 @@ export default function Compare({ token, mySlug }: Props) {
 
   return (
     <>
-      <div className="cmp-people">
-        {data.people.map((p) => (
-          <button
-            key={p.slug}
-            type="button"
-            className="chip"
-            data-on={picked.includes(p.slug)}
-            onClick={() => toggle(p.slug)}
-          >
-            {p.name}
-            {p.slug === mySlug ? ' (나)' : ''} · {p.answered}
-          </button>
-        ))}
-      </div>
-
-      <div className="cmp-controls">
-        <select value={section} onChange={(e) => setSection(Number(e.target.value))}>
-          {SECTIONS.map((s, i) => (
-            <option key={s.tab} value={i}>
-              {s.title}
-            </option>
+      <div className="cmp-bar">
+        <div className="cmp-people">
+          {data.people.map((p) => (
+            <button
+              key={p.slug}
+              type="button"
+              className="chip"
+              data-on={picked.includes(p.slug)}
+              onClick={() => toggle(p.slug)}
+            >
+              {p.name}
+              {p.slug === mySlug ? ' (나)' : ''} · {p.answered}
+            </button>
           ))}
-        </select>
-        <label className="cmp-check">
-          <input type="checkbox" checked={onlyDiff} onChange={(e) => setOnlyDiff(e.target.checked)} />
-          답이 갈린 문항만
-        </label>
+        </div>
+
+        <div className="cmp-controls">
+          <select value={section} onChange={(e) => setSection(Number(e.target.value))}>
+            {SECTIONS.map((s, i) => (
+              <option key={s.tab} value={i}>
+                {s.title}
+              </option>
+            ))}
+          </select>
+          <label className="cmp-check">
+            <input type="checkbox" checked={onlyDiff} onChange={(e) => setOnlyDiff(e.target.checked)} />
+            답이 갈린 문항만
+          </label>
+          <span className="cmp-count">
+            {rows.length} / {sectionTotal}문항 · 전체 {TOTAL}
+          </span>
+        </div>
       </div>
 
       {picked.length === 0 ? (
         <p className="cmp-msg">비교할 사람을 한 명 이상 골라주세요.</p>
-      ) : rowsForSection.length === 0 ? (
-        <p className="cmp-msg">이 장에는 보여줄 문항이 없습니다.</p>
+      ) : rows.length === 0 ? (
+        <p className="cmp-msg">
+          {onlyDiff ? '이 장에서는 답이 갈린 문항이 없습니다.' : '이 장에는 아직 답한 문항이 없습니다.'}
+        </p>
       ) : (
         <div className="cmp-scroll">
           <table className="cmp-table">
@@ -111,7 +121,7 @@ export default function Compare({ token, mySlug }: Props) {
               </tr>
             </thead>
             <tbody>
-              {rowsForSection.map((r) => (
+              {rows.map((r) => (
                 <tr key={r.key}>
                   <th className="cmp-q" scope="row">
                     {r.heading && <em>{r.heading}</em>}

@@ -13,11 +13,10 @@ import {
 } from '@/lib/answers';
 import QuestionField from './QuestionField';
 import Summary from './Summary';
-import Gate, { type Session } from './Gate';
-import Compare from './Compare';
+import Gate from './Gate';
+import { clearSession, loadSession, saveSession, type Session } from '@/lib/session';
 
 const NAME_KEY = '__name';
-const SESSION_KEY = 'suljudo-session';
 /** 손을 멈춘 뒤 이만큼 지나면 서버에 올린다. 타이핑마다 올리지 않는다. */
 const SYNC_DELAY_MS = 1500;
 
@@ -27,7 +26,6 @@ export default function Survey() {
   const [cur, setCur] = useState(0);
   const [result, setResult] = useState<'closed' | 'list' | 'ai'>('closed');
   const [menu, setMenu] = useState(false);
-  const [compare, setCompare] = useState(false);
   const [toast, setToast] = useState('');
   const [ready, setReady] = useState(false);
   const [sync, setSync] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
@@ -38,13 +36,7 @@ export default function Survey() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      let saved: Session | null = null;
-      try {
-        const raw = localStorage.getItem(SESSION_KEY);
-        if (raw) saved = JSON.parse(raw) as Session;
-      } catch {
-        /* 읽기 실패하면 로그인 화면으로 */
-      }
+      const saved = loadSession();
       if (!saved?.token) {
         if (alive) setReady(true);
         return;
@@ -57,7 +49,7 @@ export default function Survey() {
           setSession(saved);
           setAnswers(data.answers ?? {});
         } else {
-          localStorage.removeItem(SESSION_KEY);
+          clearSession();
         }
       } catch {
         // 오프라인이면 로컬 사본으로 버틴다.
@@ -184,8 +176,8 @@ export default function Survey() {
   };
 
   const logout = () => {
+    clearSession();
     try {
-      localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(STORAGE_KEY);
     } catch {
       /* 무시 */
@@ -196,11 +188,7 @@ export default function Survey() {
   };
 
   const enter = (s: Session, loaded: Answers, created: boolean) => {
-    try {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(s));
-    } catch {
-      /* 저장 못 해도 이번 방문은 쓸 수 있다 */
-    }
+    saveSession(s);
     dirty.current = false;
     setSession(s);
     setAnswers(loaded);
@@ -302,9 +290,9 @@ export default function Survey() {
             <button type="button" className="btn" onClick={() => { setMenu(false); setResult('ai'); }}>
               결과 보기
             </button>
-            <button type="button" className="btn" onClick={() => { setMenu(false); setCompare(true); }}>
+            <a className="btn" href="/compare">
               다 같이 비교
-            </button>
+            </a>
             <button type="button" className="btn" onClick={() => { setMenu(false); download(); }}>
               파일로 저장
             </button>
@@ -379,22 +367,6 @@ export default function Survey() {
                 텍스트 복사
               </button>
               <button type="button" className="btn" onClick={() => setResult('closed')}>
-                닫기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {compare && (
-        <div className="sheet" onClick={(e) => e.target === e.currentTarget && setCompare(false)}>
-          <div className="panel wide">
-            <h2>다 같이 비교</h2>
-            <div className="out">
-              <Compare token={session.token} mySlug={session.slug} />
-            </div>
-            <div className="acts">
-              <button type="button" className="btn" onClick={() => setCompare(false)}>
                 닫기
               </button>
             </div>
