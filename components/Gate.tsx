@@ -7,6 +7,13 @@ import { TOTAL } from '@/lib/questions';
 
 type Props = { onDone: (session: Session, answers: Answers, created: boolean) => void };
 
+/** 표지 제목. 글자마다 색과 기울기를 줘서 무지개 표지 느낌을 낸다. */
+const TITLE = '술주도 이상형 설문지';
+const TITLE_COLORS = [
+  '#ff3b6b', '#ff8a1f', '#ffc700', '#39c26b', '#1fa8ff',
+  '#6b5bff', '#c74bff', '#ff3b9e', '#ff6a1f', '#2bc4a8', '#1f6bff',
+];
+
 export default function Gate({ onDone }: Props) {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -37,59 +44,87 @@ export default function Gate({ onDone }: Props) {
     }
   }
 
+  const chars = [...TITLE];
+  const mid = (chars.length - 1) / 2;
+
   return (
     <div className="gate">
       <div className="gate-box">
-        <h1>술주도 이상형 설문지</h1>
-        <p className="gate-count">{TOTAL}문항</p>
-        <p className="gate-lead">
-          한 번에 다 채우기는 어렵습니다. 이름과 비밀번호를 정해두면 답한 데까지 저장되고, 다음에 그
-          자리에서 이어서 하면 됩니다. 폰에서 하다가 컴퓨터에서 이어도 됩니다.
-        </p>
+        <h1 className="cover-title" aria-label={TITLE}>
+          {chars.map((ch, i) => (
+            <span
+              key={i}
+              aria-hidden="true"
+              style={{
+                color: ch === ' ' ? 'transparent' : TITLE_COLORS[i % TITLE_COLORS.length],
+                transform: `rotate(${((i - mid) * 3.2).toFixed(1)}deg) translateY(${(
+                  Math.abs(i - mid) ** 1.7 * 1.1
+                ).toFixed(1)}px)`,
+              }}
+            >
+              {ch === ' ' ? ' ' : ch}
+            </span>
+          ))}
+        </h1>
 
-        <form onSubmit={submit}>
-          <label className="gate-field">
-            <span>이름</span>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="친구들이 알아볼 이름"
-              autoComplete="username"
-              maxLength={20}
-              autoFocus
-              required
-            />
-          </label>
-          <label className="gate-field">
-            <span>비밀번호</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="네 자 이상"
-              autoComplete="current-password"
-              minLength={4}
-              required
-            />
-          </label>
+        <div className="cover-stage">
+          <p className="bubble">
+            설문 시작
+            <br />
+            할게용~
+          </p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="cover-char" src="/char.webp" alt="" />
+        </div>
 
-          {error && <p className="gate-err">{error}</p>}
+        <div className="gate-card">
+          <p className="gate-count">{TOTAL}문항 · 한 번에 다 못 채웁니다</p>
 
-          <button type="submit" className="btn primary" disabled={busy}>
-            {busy ? '확인하는 중…' : '시작하기'}
-          </button>
-        </form>
+          <form onSubmit={submit}>
+            <label className="gate-field">
+              <span>이름</span>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="친구들이 알아볼 이름"
+                autoComplete="username"
+                maxLength={20}
+                autoFocus
+                required
+              />
+            </label>
+            <label className="gate-field">
+              <span>비밀번호</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="네 자 이상"
+                autoComplete="current-password"
+                minLength={4}
+                required
+              />
+            </label>
 
-        <p className="gate-note">
-          <b>처음이면 그냥 적으세요</b>
-          쓴 적 없는 이름이면 그대로 새로 시작합니다. 이미 있는 이름이면 비밀번호가 맞아야 이어집니다.
-        </p>
-        <p className="gate-note">
-          <b>답은 서버에 저장됩니다</b>
-          들어온 사람끼리 비교 페이지에서 서로의 답을 볼 수 있습니다. 비밀번호는 알아볼 수 없게 바꿔
-          저장하고 원래 값은 남기지 않습니다.
-        </p>
+            {error && <p className="gate-err">{error}</p>}
+
+            <button type="submit" className="btn primary" disabled={busy}>
+              {busy ? '확인하는 중…' : '시작하기'}
+            </button>
+          </form>
+
+          <p className="gate-note">
+            <b>처음이면 그냥 적으세요</b>
+            쓴 적 없는 이름이면 새로 시작하고, 이미 있는 이름이면 비밀번호가 맞아야 이어집니다. 폰에서
+            하다가 컴퓨터에서 이어도 됩니다.
+          </p>
+          <p className="gate-note">
+            <b>답은 서버에 저장됩니다</b>
+            들어온 사람끼리 비교 페이지에서 서로의 답을 볼 수 있습니다. 비밀번호는 알아볼 수 없게 바꿔
+            저장합니다.
+          </p>
+        </div>
       </div>
     </div>
   );

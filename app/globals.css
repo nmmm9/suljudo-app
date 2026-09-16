@@ -132,16 +132,54 @@ textarea { resize: vertical; min-height: 58px; display: block; }
 
 .toast { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 999px; font-size: 13px; z-index: 30; }
 
-/* ── 들어오는 화면 ───────────────────── */
+/* ── 들어오는 화면 (표지) ────────────── */
+/* 여기만 알록달록하다. 설문지 본문은 계속 흰 바탕 검정 글씨다. */
 .boot { padding: 80px 16px; text-align: center; color: var(--muted); font-size: 14px; }
-.gate { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
-.gate-box { width: 100%; max-width: 380px; }
+.gate {
+  min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 32px 20px;
+  background: linear-gradient(115deg, #ff9a9e 0%, #fecfa0 16%, #fff5a5 32%, #b8f2a0 48%,
+    #a0e9f5 64%, #b3b6f7 80%, #f3a8e8 100%);
+}
+.gate-box { width: 100%; max-width: 420px; }
 
-.gate-box h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.25; }
-.gate-count { margin: 10px 0 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cover-title {
+  margin: 0 0 4px; text-align: center; font-size: clamp(27px, 8vw, 38px); font-weight: 700;
+  letter-spacing: 0.01em; line-height: 1.1; display: flex; justify-content: center; flex-wrap: nowrap;
+}
+.cover-title span {
+  display: inline-block;
+  -webkit-text-stroke: 3px #ffffff;
+  paint-order: stroke fill;
+  text-shadow: 2px 3px 0 rgba(0, 0, 0, 0.16);
+}
+
+.cover-stage { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 22px 0 -18px; }
+.bubble {
+  position: relative; margin: 0 0 18px; padding: 12px 15px; border-radius: 16px;
+  background: #ffe9a8; border: 2px solid rgba(0, 0, 0, 0.16);
+  font-size: 15px; font-weight: 500; line-height: 1.45; color: #3b2f16; white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+.bubble::after {
+  content: ''; position: absolute; right: -10px; bottom: 14px; width: 0; height: 0;
+  border: 9px solid transparent; border-left-color: #ffe9a8; border-right: 0;
+}
+/* 원본이 방 배경까지 담긴 전신 컷이라, 얼굴 쪽만 잘라 스티커처럼 보이게 한다. */
+.cover-char {
+  width: clamp(112px, 30vw, 136px); height: clamp(112px, 30vw, 136px);
+  object-fit: cover; object-position: 50% 6%;
+  display: block; border-radius: 50%; border: 4px solid #ffffff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+}
+
+.gate-card {
+  background: var(--bg); border-radius: 14px; padding: 20px 20px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+}
+.gate-count { margin: 0 0 16px; font-size: 12px; color: var(--muted); text-align: center; }
 .gate-lead { margin: 20px 0 0; padding-top: 18px; border-top: 1px solid var(--line2); font-size: 13px; line-height: 1.8; color: var(--ink2); }
 
-.gate-box form { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+.gate-box form { display: flex; flex-direction: column; gap: 14px; }
 .gate-field { display: block; }
 .gate-field span { display: block; font-size: 11px; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
 /* 모바일에서 입력할 때 화면이 확대되지 않도록 16px 이상으로 둔다. */
@@ -150,7 +188,7 @@ textarea { resize: vertical; min-height: 58px; display: block; }
 
 .gate-err { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink); border-left: 2px solid var(--ink); padding: 2px 0 2px 11px; }
 
-.gate-note { margin: 26px 0 0; padding-top: 16px; border-top: 1px solid var(--line2); font-size: 12px; line-height: 1.85; color: var(--muted); }
+.gate-note { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line2); font-size: 12px; line-height: 1.8; color: var(--muted); }
 .gate-note b { display: block; color: var(--ink2); font-weight: 500; margin-bottom: 2px; }
 .gate-note + .gate-note { margin-top: 12px; padding-top: 0; border-top: 0; }
 
