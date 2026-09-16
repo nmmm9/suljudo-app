@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import type { Answers } from '@/lib/answers';
 import type { Session } from '@/lib/session';
-import { TOTAL } from '@/lib/questions';
 
 type Props = { onDone: (session: Session, answers: Answers, created: boolean) => void };
 
@@ -74,12 +73,10 @@ export default function Gate({ onDone }: Props) {
             할게용~
           </p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="cover-char" src="/char.webp" alt="" />
+          <img className="cover-char" src="/char.png" alt="" />
         </div>
 
         <div className="gate-card">
-          <p className="gate-count">{TOTAL}문항 · 한 번에 다 못 채웁니다</p>
-
           <form onSubmit={submit}>
             <label className="gate-field">
               <span>이름</span>
