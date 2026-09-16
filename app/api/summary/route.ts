@@ -96,6 +96,25 @@ const SYSTEM = `당신은 이상형 설문 543문항의 답변을 읽고, 답한
 어떤 상대와 부딪힐지. 처음에는 끌리지만 오래가기 어려운 조합이 보이면 그것도 적습니다.
 근거가 되는 답을 함께 적습니다.`;
 
+/**
+ * 제공사 오류 원문에는 결제 안내와 계정 정보가 섞여 나온다.
+ * 설문에 답하는 사람에게는 그대로 보이면 안 되므로 짧은 문장으로 바꾼다.
+ */
+function friendly(err: unknown): string {
+  if (err instanceof OpenAI.APIError) {
+    if (err.status === 401 || err.status === 403) return '요약 기능 설정에 문제가 있습니다. 만든 사람에게 알려주세요';
+    if (err.status === 429) {
+      const code = (err.error as { code?: string } | undefined)?.code;
+      if (code === 'credit_balance_exhausted' || err.code === 'insufficient_quota') {
+        return '요약 사용량이 다 찼습니다. 만든 사람에게 알려주세요';
+      }
+      return '지금 요청이 몰려 있습니다. 잠시 뒤 다시 눌러주세요';
+    }
+    if (err.status && err.status >= 500) return '요약 서버가 잠시 불안정합니다. 다시 눌러주세요';
+  }
+  return '요약을 만들지 못했습니다. 다시 눌러주세요';
+}
+
 export async function POST(req: Request) {
   if (!process.env.OPENAI_API_KEY) {
     return Response.json(
@@ -155,8 +174,9 @@ export async function POST(req: Request) {
             }
           }
         } catch (err) {
-          const msg = err instanceof Error ? err.message : '알 수 없는 오류';
-          controller.enqueue(encoder.encode(`\n\n(요약이 중간에 끊겼습니다: ${msg})`));
+          // 제공사 원문에는 계정·결제 정보가 섞여 나온다. 기록만 남기고 화면에는 짧게 알린다.
+          console.error('summary stream failed', err);
+          controller.enqueue(encoder.encode(`\n\n(${friendly(err)})`));
         } finally {
           controller.close();
         }
@@ -171,11 +191,8 @@ export async function POST(req: Request) {
       },
     });
   } catch (err) {
+    console.error('summary request failed', err);
     const status = err instanceof OpenAI.APIError ? err.status ?? 500 : 500;
-    const message =
-      err instanceof OpenAI.APIError
-        ? `AI 호출이 실패했습니다 (${status}). ${err.message}`
-        : 'AI 호출이 실패했습니다.';
-    return Response.json({ error: message }, { status });
+    return Response.json({ error: friendly(err) }, { status });
   }
 }
