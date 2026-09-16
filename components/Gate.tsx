@@ -114,16 +114,6 @@ export default function Gate({ onDone }: Props) {
             </button>
           </form>
 
-          <p className="gate-note">
-            <b>처음이면 그냥 적으세요</b>
-            쓴 적 없는 이름이면 새로 시작하고, 이미 있는 이름이면 비밀번호가 맞아야 이어집니다. 폰에서
-            하다가 컴퓨터에서 이어도 됩니다.
-          </p>
-          <p className="gate-note">
-            <b>답은 서버에 저장됩니다</b>
-            들어온 사람끼리 비교 페이지에서 서로의 답을 볼 수 있습니다. 비밀번호는 알아볼 수 없게 바꿔
-            저장합니다.
-          </p>
         </div>
       </div>
     </div>
