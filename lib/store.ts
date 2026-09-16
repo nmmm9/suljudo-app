@@ -12,6 +12,11 @@ export type Person = {
   answers: Answers;
   createdAt: string;
   updatedAt: string;
+  /** 마지막으로 만든 AI 요약. 비교 화면에서 서로 읽을 수 있게 남겨 둔다. */
+  summary?: string;
+  summaryAt?: string;
+  /** 요약을 만들 때 답한 문항 수. 그 뒤로 더 채웠는지 알려면 필요하다. */
+  summaryAnswered?: number;
 };
 export type PublicPerson = { name: string; slug: string; answered: number; updatedAt: string };
 

@@ -5,7 +5,16 @@ import { listPeople, loadPerson, readToken } from '@/lib/store';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-export type ComparePerson = { name: string; slug: string; answered: number; updatedAt: string };
+export type ComparePerson = {
+  name: string;
+  slug: string;
+  answered: number;
+  updatedAt: string;
+  /** 마지막으로 만든 AI 요약. 아직 안 돌렸으면 없다. */
+  summary?: string;
+  summaryAt?: string;
+  summaryAnswered?: number;
+};
 export type CompareData = {
   people: ComparePerson[];
   /** 문항 키 → 사람 slug → 사람이 읽는 답. 답하지 않았으면 키가 없다. */
@@ -32,6 +41,9 @@ export async function GET(req: Request) {
       slug: person.slug,
       answered: totalAnswered(answers),
       updatedAt: person.updatedAt,
+      summary: person.summary,
+      summaryAt: person.summaryAt,
+      summaryAnswered: person.summaryAnswered,
     });
     for (const q of QUESTIONS) {
       if (!isAnswered(q, answers)) continue;

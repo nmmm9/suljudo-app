@@ -327,7 +327,7 @@ export default function Survey() {
 
             <div className="out">
               {result === 'ai' ? (
-                <Summary name={name} answers={answers} answered={answered} />
+                <Summary name={name} answers={answers} answered={answered} token={session.token} />
               ) : (
                 <>
                   <div className="rs-h">

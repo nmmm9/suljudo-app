@@ -212,6 +212,20 @@ textarea { resize: vertical; min-height: 58px; display: block; }
 .cmp-controls select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); font: inherit; font-size: 13px; }
 .cmp-check { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 .cmp-count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+.cmp-view { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.cmp-view button { padding: 7px 14px; border: 0; background: var(--bg); color: var(--muted); font-size: 13px; }
+.cmp-view button + button { border-left: 1px solid var(--line); }
+.cmp-view button[data-on='true'] { background: var(--fill); color: var(--fill-ink); font-weight: 500; }
+
+/* AI 요약 모아보기: 사람 수가 적으면 나란히, 많으면 줄바꿈해서 읽는다. */
+.cmp-sums { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; align-items: start; }
+.cmp-sum { border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.cmp-sum > header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--ink); background: var(--bg); position: sticky; top: 0; }
+.cmp-sum > header b { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+.cmp-sum > header span { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.cmp-sum .ai { padding: 14px 16px; max-height: 62vh; overflow-y: auto; overscroll-behavior: contain; }
+.cmp-none-sum { margin: 0; padding: 22px 16px; font-size: 13px; line-height: 1.7; color: var(--muted); }
+.cmp-stale { margin: 14px 0 0; padding-top: 10px; border-top: 1px solid var(--line2); font-size: 12px; color: var(--muted); }
 .cmp-scroll { overflow: auto; max-height: calc(100svh - 210px); border: 1px solid var(--line); border-radius: 4px; }
 .cmp-table { border-collapse: separate; border-spacing: 0; font-size: 13px; width: max-content; min-width: 100%; }
 .cmp-table th, .cmp-table td { padding: 8px 10px; border-bottom: 1px solid var(--line2); text-align: left; vertical-align: top; }

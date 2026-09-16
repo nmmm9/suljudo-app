@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { resultText, totalAnswered, type Answers } from '@/lib/answers';
 import { TOTAL } from '@/lib/questions';
+import { loadPerson, readToken, savePerson } from '@/lib/store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -48,18 +49,36 @@ const SYSTEM = `당신은 이상형 설문 543문항의 답변을 읽고, 답한
 
 - 답변에 적히지 않은 것도 읽어냅니다. 그것이 이 글의 목적입니다. 다만 반드시 답변에서 끌어냅니다. 근거 없이 지어내지 않습니다.
 - 모든 주장에는 근거가 붙어야 합니다. 어떤 답들을 묶어서 그렇게 보았는지가 문장 안에 드러나야 합니다. 목록을 나열하지 말고 서술 안에 녹입니다.
+
+답을 되풀이하지 않습니다
+
+이 글에서 가장 흔한 실패는 답변지를 다시 읽어주는 것입니다. 그건 요약이 아니라 받아쓰기입니다.
+
+- 고른 항목을 늘어놓는 문장을 쓰지 않습니다. "강아지상, 계란형 얼굴, 무쌍의 눈을 골랐습니다" 같은 문장은 답변지를 보면 이미 아는 내용이라 쓸 이유가 없습니다.
+- 근거로 드는 답은 한 문장에 두세 개까지만, 그것도 주장을 받치는 자리에만 놓습니다. 분량의 대부분은 그 답들이 무엇을 뜻하는지에 씁니다. 근거 한 줄에 해석 서너 줄이 적당한 비율입니다.
+- 한 항목의 답을 그대로 옮겨 적는 대신, 떨어져 있는 항목 서넛을 묶어 그 사이에서만 보이는 것을 말합니다. 서로 다른 장에 흩어진 답을 연결할 때 가장 좋은 문장이 나옵니다.
+- 좋은 문장인지 확인하는 기준이 하나 있습니다. 본인이 읽고 "이건 내가 쓴 건데"가 아니라 "이렇게까지 생각해 본 적은 없는데 맞다"고 느껴야 합니다. 앞쪽이면 지우고 다시 씁니다.
 - 추론의 강도를 문장에 드러냅니다. 답변에 직접 적힌 것은 단정해서 쓰고, 여러 답을 묶어 끌어낸 것은 그렇게 보인다고 쓰고, 근거가 얇은 것은 가능성으로 씁니다. 세 층을 뭉뚱그리지 않습니다.
 - 답하지 않은 영역을 채우려고 일반론을 끌어오지 않습니다. 근거가 없으면 없다고 적습니다.
 - 누구에게나 들어맞는 말을 쓰지 않습니다. "겉으로는 강해 보이지만 속은 여리다" 같은 문장은 아무것도 말하지 않습니다. 이 답변지가 아니면 나올 수 없는 문장만 씁니다.
 - 성격 유형으로 분류하지 않습니다. 유형 이름을 붙이거나 MBTI에 빗대지 않습니다.
 - 진단하지 않습니다. 애착 유형, 불안, 회피 같은 임상 용어를 라벨로 붙이지 않습니다. 대신 관찰한 행동 경향을 그대로 서술합니다. 설문에 '불안형 VS 회피형' 문항이 있더라도, 그 답은 본인의 자기 인식으로만 다룹니다.
 - 서로 어긋나는 답은 그대로 짚습니다. 억지로 하나의 상으로 봉합하지 않습니다. 사람은 원래 일관되지 않고, 그 균열이 가장 많은 것을 말해 줍니다.
-- 칭찬도 훈계도 하지 않습니다. 고쳐야 한다고 말하지 않습니다. 관찰한 것을 전달하고 판단은 읽는 사람에게 맡깁니다.
+
+직설적으로 씁니다
+
+- 아부하지 않습니다. 듣기 좋으라고 덧붙이는 문장을 쓰지 않습니다. 좋게 포장한 말은 정보가 없습니다.
+- 돌려 말하지 않습니다. 할 말이 있으면 첫 문장에 적습니다. 완곡어법으로 감싸지 않습니다.
+- 근거가 충분하면 단정합니다. "~인 것 같습니다", "~일 수도 있습니다"를 습관처럼 붙이지 않습니다. 그 표현은 근거가 실제로 얇을 때만 씁니다.
+- 기준이 까다로우면 까다롭다고 적습니다. 서로 동시에 만족하기 어려운 조건을 함께 요구하고 있으면 그 점을 분명히 말합니다. 현실에서 그런 사람을 찾기 어렵다면 그렇게 적습니다.
+- 본인이 보기 싫어할 만한 내용도 근거가 있으면 빼지 않고 씁니다. 다만 인신공격은 하지 않습니다. 답변에 드러난 것만 말합니다.
+- 훈계하지 않습니다. 고치라고 말하지 않습니다. 무엇이 보이는지 말하고 끝냅니다. 판단은 읽는 사람 몫입니다.
+- 마지막을 위로나 응원으로 마무리하지 않습니다. 할 말이 끝나면 그냥 끝냅니다.
 
 문체
 
 - 한국어 존댓말, 담백한 설명체. 광고 카피나 성격 테스트 결과 같은 말투를 쓰지 않습니다.
-- 과장, 단정적인 선언, 이모지, 느낌표를 쓰지 않습니다.
+- 과장, 이모지, 느낌표를 쓰지 않습니다.
 - 문장은 짧게 끊습니다. 한 문장에 한 가지 생각만 담습니다.
 - 분량은 정해 두지 않습니다. 근거가 두꺼운 곳은 길게 쓰고, 근거가 얇은 곳은 짧게 쓰거나 없다고 적습니다. 채우기 위해 늘리지 않습니다.
 
@@ -165,6 +184,10 @@ export async function POST(req: Request) {
   const name = (body.name ?? '').toString().trim().slice(0, 40);
   const text = resultText(answers, name, answered, TOTAL);
 
+  // 로그인한 사람이면 끝난 요약을 그 사람 기록에 남긴다. 토큰이 없어도 요약은 만들어 준다.
+  const auth = req.headers.get('authorization') ?? '';
+  const slug = readToken(auth.startsWith('Bearer ') ? auth.slice(7) : null);
+
   const client = new OpenAI();
   const encoder = new TextEncoder();
 
@@ -186,9 +209,11 @@ export async function POST(req: Request) {
 
     const out = new ReadableStream<Uint8Array>({
       async start(controller) {
+        let full = '';
         try {
           for await (const event of stream) {
             if (event.type === 'response.output_text.delta') {
+              full += event.delta;
               controller.enqueue(encoder.encode(event.delta));
             }
           }
@@ -196,8 +221,24 @@ export async function POST(req: Request) {
           // 제공사 원문에는 계정·결제 정보가 섞여 나온다. 기록만 남기고 화면에는 짧게 알린다.
           console.error('summary stream failed', err);
           controller.enqueue(encoder.encode(`\n\n(${friendly(err)})`));
+          full = '';
         } finally {
           controller.close();
+        }
+        // 끝까지 받은 것만 저장한다. 비교 화면에서 서로 읽을 수 있게 남긴다.
+        // 화면에는 이미 다 흘러갔으므로 저장이 실패해도 사용자 쪽은 멀쩡하다.
+        if (slug && full.trim().length > 200) {
+          try {
+            const person = await loadPerson(slug);
+            if (person) {
+              person.summary = full;
+              person.summaryAt = new Date().toISOString();
+              person.summaryAnswered = answered;
+              await savePerson(person);
+            }
+          } catch (err) {
+            console.error('summary save failed', slug, err);
+          }
         }
       },
     });

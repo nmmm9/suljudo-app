@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { SECTIONS, TOTAL } from '@/lib/questions';
 import type { CompareData } from '@/app/api/everyone/route';
+import SummaryText from './SummaryText';
 
 type Props = { token: string; mySlug: string };
+type View = 'answers' | 'summaries';
 
 export default function Compare({ token, mySlug }: Props) {
   const [data, setData] = useState<CompareData | null>(null);
@@ -12,6 +14,7 @@ export default function Compare({ token, mySlug }: Props) {
   const [picked, setPicked] = useState<string[]>([]);
   const [onlyDiff, setOnlyDiff] = useState(false);
   const [section, setSection] = useState(0);
+  const [view, setView] = useState<View>('answers');
 
   useEffect(() => {
     let alive = true;
@@ -86,25 +89,77 @@ export default function Compare({ token, mySlug }: Props) {
         </div>
 
         <div className="cmp-controls">
-          <select value={section} onChange={(e) => setSection(Number(e.target.value))}>
-            {SECTIONS.map((s, i) => (
-              <option key={s.tab} value={i}>
-                {s.title}
-              </option>
-            ))}
-          </select>
-          <label className="cmp-check">
-            <input type="checkbox" checked={onlyDiff} onChange={(e) => setOnlyDiff(e.target.checked)} />
-            답이 갈린 문항만
-          </label>
-          <span className="cmp-count">
-            {rows.length} / {sectionTotal}문항 · 전체 {TOTAL}
-          </span>
+          <div className="cmp-view">
+            <button type="button" data-on={view === 'answers'} onClick={() => setView('answers')}>
+              답변 비교
+            </button>
+            <button type="button" data-on={view === 'summaries'} onClick={() => setView('summaries')}>
+              AI 요약
+            </button>
+          </div>
+
+          {view === 'answers' && (
+            <>
+              <select value={section} onChange={(e) => setSection(Number(e.target.value))}>
+                {SECTIONS.map((s, i) => (
+                  <option key={s.tab} value={i}>
+                    {s.title}
+                  </option>
+                ))}
+              </select>
+              <label className="cmp-check">
+                <input type="checkbox" checked={onlyDiff} onChange={(e) => setOnlyDiff(e.target.checked)} />
+                답이 갈린 문항만
+              </label>
+              <span className="cmp-count">
+                {rows.length} / {sectionTotal}문항 · 전체 {TOTAL}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
       {picked.length === 0 ? (
         <p className="cmp-msg">비교할 사람을 한 명 이상 골라주세요.</p>
+      ) : view === 'summaries' ? (
+        <div className="cmp-sums">
+          {picked.map((slug) => {
+            const p = data.people.find((x) => x.slug === slug);
+            if (!p) return null;
+            return (
+              <section className="cmp-sum" key={slug}>
+                <header>
+                  <b>
+                    {p.name}
+                    {slug === mySlug ? ' (나)' : ''}
+                  </b>
+                  <span>
+                    {p.summary
+                      ? `${p.summaryAnswered ?? p.answered}문항 기준 · ${new Date(
+                          p.summaryAt ?? p.updatedAt
+                        ).toLocaleDateString('ko-KR')}`
+                      : '아직 요약 없음'}
+                  </span>
+                </header>
+                {p.summary ? (
+                  <div className="ai">
+                    <SummaryText text={p.summary} />
+                    {p.summaryAnswered != null && p.answered > p.summaryAnswered && (
+                      <p className="cmp-stale">
+                        이 요약 이후 {p.answered - p.summaryAnswered}문항을 더 채웠습니다.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="cmp-none-sum">
+                    아직 요약을 돌리지 않았습니다. 설문지에서 결과 보기를 눌러 요약을 받으면 여기에
+                    올라옵니다.
+                  </p>
+                )}
+              </section>
+            );
+          })}
+        </div>
       ) : rows.length === 0 ? (
         <p className="cmp-msg">
           {onlyDiff ? '이 장에서는 답이 갈린 문항이 없습니다.' : '이 장에는 아직 답한 문항이 없습니다.'}
