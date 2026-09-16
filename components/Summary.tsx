@@ -94,7 +94,9 @@ export default function Summary({ name, answers, answered }: Props) {
         <p>
           답한 {answered}문항을 AI가 읽고, 어떤 사람인지 정리해 줍니다.
           <br />
-          20초 안팎 걸립니다.
+          심리, 만날 사람, 만날 자리까지 열한 꼭지로 나옵니다.
+          <br />
+          많이 채웠을수록 길고 자세해집니다. 1분에서 2분 걸립니다.
         </p>
         <button type="button" className="btn primary" onClick={run}>
           요약 받기
