@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+.env
+.env.local
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# 예전 정적 버전 (nmmm9/suljudo GitHub Pages에 있음)
+index.html
+
+.vercel
