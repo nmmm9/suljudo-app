@@ -18,6 +18,7 @@ export default function Gate({ onDone }: Props) {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [playing, setPlaying] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,6 +70,30 @@ export default function Gate({ onDone }: Props) {
         <div className="cover-stage">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="cover-char" src="/char.png" alt="" />
+
+          {/* 캐릭터 옆 재생 버튼. 누르면 춤추는 영상이 툭 튀어나온다. */}
+          <button
+            type="button"
+            className="play-btn"
+            onClick={() => setPlaying(true)}
+            aria-label="음악 재생"
+          >
+            ▶
+          </button>
+
+          {playing && (
+            <div className="dance-pop">
+              <video src="/dance.mp4" autoPlay playsInline controls loop />
+              <button
+                type="button"
+                className="dance-close"
+                onClick={() => setPlaying(false)}
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="gate-card">
