@@ -83,7 +83,17 @@ export default function Gate({ onDone }: Props) {
 
           {playing && (
             <div className="dance-pop">
-              <video src="/dance.mp4" autoPlay playsInline controls loop />
+              {/* 내려받기·우클릭 저장은 막는다. */}
+              <video
+                src="/dance.mp4"
+                autoPlay
+                playsInline
+                controls
+                loop
+                controlsList="nodownload noplaybackrate"
+                disablePictureInPicture
+                onContextMenu={(e) => e.preventDefault()}
+              />
               <button
                 type="button"
                 className="dance-close"
