@@ -67,11 +67,6 @@ export default function Gate({ onDone }: Props) {
         </h1>
 
         <div className="cover-stage">
-          <p className="bubble">
-            설문 시작
-            <br />
-            할게용~
-          </p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="cover-char" src="/char.png" alt="" />
         </div>
@@ -84,7 +79,6 @@ export default function Gate({ onDone }: Props) {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="친구들이 알아볼 이름"
                 autoComplete="username"
                 maxLength={20}
                 autoFocus
