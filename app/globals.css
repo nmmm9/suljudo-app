@@ -70,7 +70,7 @@ main { padding-bottom: 112px; }
 .opt[data-on='true'] { background: var(--fill); border-color: var(--fill); color: var(--fill-ink); font-weight: 500; }
 .vs em { align-self: center; font-style: normal; font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
 
-input[type='text'], input[type='number'], textarea {
+input[type='text'], input[type='number'], input[type='password'], textarea {
   width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 4px;
   background: var(--bg); color: var(--ink); font: inherit; font-size: 14px;
 }
@@ -134,15 +134,25 @@ textarea { resize: vertical; min-height: 58px; display: block; }
 
 /* ── 들어오는 화면 ───────────────────── */
 .boot { padding: 80px 16px; text-align: center; color: var(--muted); font-size: 14px; }
-.gate { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
-.gate-box { width: 100%; max-width: 360px; }
-.gate-box h1 { margin: 0 0 10px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-.gate-lead { margin: 0 0 22px; font-size: 13px; line-height: 1.75; color: var(--muted); }
-.gate-field { display: block; margin-bottom: 12px; }
-.gate-field span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
-.gate-box .btn { width: 100%; margin-top: 6px; }
-.gate-err { margin: 10px 0 0; font-size: 13px; line-height: 1.6; color: var(--ink); border-left: 2px solid var(--ink); padding-left: 10px; }
-.gate-note { margin: 22px 0 0; font-size: 12px; line-height: 1.75; color: var(--muted); }
+.gate { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+.gate-box { width: 100%; max-width: 380px; }
+
+.gate-box h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.25; }
+.gate-count { margin: 10px 0 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.gate-lead { margin: 20px 0 0; padding-top: 18px; border-top: 1px solid var(--line2); font-size: 13px; line-height: 1.8; color: var(--ink2); }
+
+.gate-box form { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+.gate-field { display: block; }
+.gate-field span { display: block; font-size: 11px; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+/* 모바일에서 입력할 때 화면이 확대되지 않도록 16px 이상으로 둔다. */
+.gate-field input { font-size: 16px; padding: 11px 13px; }
+.gate-box .btn { width: 100%; padding: 14px; font-size: 15px; margin-top: 2px; }
+
+.gate-err { margin: 0; font-size: 13px; line-height: 1.6; color: var(--ink); border-left: 2px solid var(--ink); padding: 2px 0 2px 11px; }
+
+.gate-note { margin: 26px 0 0; padding-top: 16px; border-top: 1px solid var(--line2); font-size: 12px; line-height: 1.85; color: var(--muted); }
+.gate-note b { display: block; color: var(--ink2); font-weight: 500; margin-bottom: 2px; }
+.gate-note + .gate-note { margin-top: 12px; padding-top: 0; border-top: 0; }
 
 .who { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: nowrap; }
 .who b { font-size: 14px; font-weight: 600; }

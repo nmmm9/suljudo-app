@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Answers } from '@/lib/answers';
 import type { Session } from '@/lib/session';
+import { TOTAL } from '@/lib/questions';
 
 type Props = { onDone: (session: Session, answers: Answers, created: boolean) => void };
 
@@ -40,10 +41,10 @@ export default function Gate({ onDone }: Props) {
     <div className="gate">
       <div className="gate-box">
         <h1>술주도 이상형 설문지</h1>
+        <p className="gate-count">{TOTAL}문항</p>
         <p className="gate-lead">
-          543문항입니다. 한 번에 다 못 채웁니다.
-          <br />
-          이름과 비밀번호를 정해두면 다음에 이어서 할 수 있습니다.
+          한 번에 다 채우기는 어렵습니다. 이름과 비밀번호를 정해두면 답한 데까지 저장되고, 다음에 그
+          자리에서 이어서 하면 됩니다. 폰에서 하다가 컴퓨터에서 이어도 됩니다.
         </p>
 
         <form onSubmit={submit}>
@@ -56,6 +57,7 @@ export default function Gate({ onDone }: Props) {
               placeholder="친구들이 알아볼 이름"
               autoComplete="username"
               maxLength={20}
+              autoFocus
               required
             />
           </label>
@@ -65,7 +67,7 @@ export default function Gate({ onDone }: Props) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="네 자 이상, 간단해도 됩니다"
+              placeholder="네 자 이상"
               autoComplete="current-password"
               minLength={4}
               required
@@ -80,9 +82,13 @@ export default function Gate({ onDone }: Props) {
         </form>
 
         <p className="gate-note">
-          처음 쓰는 이름이면 그대로 새로 시작합니다. 이미 쓴 이름이면 비밀번호가 맞아야 이어집니다.
-          <br />
-          답변은 서버에 저장되고, 들어온 사람끼리 비교 탭에서 서로 볼 수 있습니다.
+          <b>처음이면 그냥 적으세요</b>
+          쓴 적 없는 이름이면 그대로 새로 시작합니다. 이미 있는 이름이면 비밀번호가 맞아야 이어집니다.
+        </p>
+        <p className="gate-note">
+          <b>답은 서버에 저장됩니다</b>
+          들어온 사람끼리 비교 페이지에서 서로의 답을 볼 수 있습니다. 비밀번호는 알아볼 수 없게 바꿔
+          저장하고 원래 값은 남기지 않습니다.
         </p>
       </div>
     </div>
