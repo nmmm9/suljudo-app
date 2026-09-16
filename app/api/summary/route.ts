@@ -7,7 +7,26 @@ export const maxDuration = 300;
 
 /** 답을 너무 조금 채우면 요약이 의미가 없다. */
 const MIN_ANSWERS = 30;
-const MODEL = process.env.OPENAI_MODEL ?? 'gpt-5.6-terra';
+const DEFAULT_MODEL = 'gpt-5.6-terra';
+
+/**
+ * 환경변수에 모델명 대신 API 키가 들어간 적이 있다. 그때는 404 model_not_found 만 남아
+ * 원인이 보이지 않았다. 모델명처럼 보이지 않으면 기본값으로 돌리고 기록을 남긴다.
+ */
+function resolveModel(): string {
+  const raw = process.env.OPENAI_MODEL?.trim().replace(/^["']|["']$/g, '');
+  if (!raw) return DEFAULT_MODEL;
+  if (raw.startsWith('sk-') || raw.length > 60 || /\s/.test(raw)) {
+    console.error('OPENAI_MODEL 값이 모델명 형태가 아닙니다. 기본값을 씁니다.', {
+      length: raw.length,
+      startsWith: raw.slice(0, 3),
+    });
+    return DEFAULT_MODEL;
+  }
+  return raw;
+}
+
+const MODEL = resolveModel();
 
 const SYSTEM = `당신은 이상형 설문 543문항의 답변을 읽고, 답한 사람이 어떤 사람인지 읽어내는 역할을 맡았습니다.
 답변지는 "어떤 상대를 원하는가"를 묻지만, 무엇을 원하는지를 고른 방식에는 고른 사람이 드러납니다.
