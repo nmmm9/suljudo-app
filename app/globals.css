@@ -88,9 +88,11 @@ textarea { resize: vertical; min-height: 58px; display: block; }
 .btn.primary { background: var(--fill); border-color: var(--fill); color: var(--fill-ink); }
 .btn:disabled { opacity: 0.3; cursor: default; }
 
-.foot { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; padding: 28px 0 8px; font-size: 13px; }
-.foot button { border: 0; background: none; padding: 4px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
-.foot button.danger { color: var(--ink); }
+.foot-note { padding: 26px 0 8px; margin: 0; text-align: center; font-size: 12px; color: var(--muted); line-height: 1.7; }
+.btn-menu { flex: 0 0 auto; width: 76px; }
+.panel.menu { max-width: 340px; gap: 8px; }
+.panel.menu .btn { flex: 0 0 auto; text-align: center; }
+.panel.menu .btn.ghost { border-color: var(--line); color: var(--muted); }
 
 /* ── 결과 ─────────────────────────────── */
 .sheet { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0, 0, 0, 0.5); }

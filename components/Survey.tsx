@@ -20,6 +20,7 @@ export default function Survey() {
   const [answers, setAnswers] = useState<Answers>({});
   const [cur, setCur] = useState(0);
   const [result, setResult] = useState<'closed' | 'list' | 'ai'>('closed');
+  const [menu, setMenu] = useState(false);
   const [toast, setToast] = useState('');
   const [ready, setReady] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -170,31 +171,20 @@ export default function Survey() {
           )
         )}
 
-        <div className="foot">
-          <button type="button" onClick={download}>
-            파일로 저장
-          </button>
-          <button type="button" onClick={() => fileRef.current?.click()}>
-            불러오기
-          </button>
-          <button type="button" onClick={() => setResult('ai')}>
-            결과 보기
-          </button>
-          <button type="button" className="danger" onClick={reset}>
-            전체 초기화
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".json,application/json"
-            hidden
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              e.target.value = '';
-              if (f) void load(f);
-            }}
-          />
-        </div>
+        <p className="foot-note">
+          답변은 이 브라우저에만 저장됩니다. 아래 메뉴에서 파일로 받아 둘 수 있습니다.
+        </p>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".json,application/json"
+          hidden
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            e.target.value = '';
+            if (f) void load(f);
+          }}
+        />
       </main>
 
       <div className="bar">
@@ -209,8 +199,35 @@ export default function Survey() {
           >
             {cur < SECTIONS.length - 1 ? '다음' : '결과 보기'}
           </button>
+          {/* 문항이 많은 장은 페이지가 14,000px를 넘는다. 이 버튼들이 문서 끝에 있으면 닿지 않는다. */}
+          <button type="button" className="btn btn-menu" onClick={() => setMenu(true)}>
+            메뉴
+          </button>
         </div>
       </div>
+
+      {menu && (
+        <div className="sheet" onClick={(e) => e.target === e.currentTarget && setMenu(false)}>
+          <div className="panel menu">
+            <h2>메뉴</h2>
+            <button type="button" className="btn" onClick={() => { setMenu(false); setResult('ai'); }}>
+              결과 보기
+            </button>
+            <button type="button" className="btn" onClick={() => { setMenu(false); download(); }}>
+              파일로 저장
+            </button>
+            <button type="button" className="btn" onClick={() => { setMenu(false); fileRef.current?.click(); }}>
+              불러오기
+            </button>
+            <button type="button" className="btn" onClick={() => { setMenu(false); reset(); }}>
+              전체 초기화
+            </button>
+            <button type="button" className="btn ghost" onClick={() => setMenu(false)}>
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
 
       {result !== 'closed' && (
         <div className="sheet" onClick={(e) => e.target === e.currentTarget && setResult('closed')}>
