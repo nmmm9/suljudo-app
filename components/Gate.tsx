@@ -18,7 +18,8 @@ export default function Gate({ onDone }: Props) {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [playing, setPlaying] = useState(false);
+  // 어느 영상을 틀어 둘지. null이면 닫힌 상태.
+  const [playing, setPlaying] = useState<'bad' | 'dva' | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,21 +72,30 @@ export default function Gate({ onDone }: Props) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="cover-char" src="/char.png" alt="" />
 
-          {/* 캐릭터 옆 재생 버튼. 누르면 춤추는 영상이 툭 튀어나온다. */}
+          {/* 캐릭터 양옆 재생 버튼 둘. 각각 다른 영상이 튀어나온다. */}
           <button
             type="button"
-            className="play-btn"
-            onClick={() => setPlaying(true)}
-            aria-label="음악 재생"
+            className="play-btn left"
+            onClick={() => setPlaying('bad')}
+            aria-label="첫 번째 영상 재생"
+          >
+            ▶
+          </button>
+          <button
+            type="button"
+            className="play-btn right"
+            onClick={() => setPlaying('dva')}
+            aria-label="두 번째 영상 재생"
           >
             ▶
           </button>
 
           {playing && (
-            <div className="dance-pop">
+            <div className={`dance-pop ${playing === 'bad' ? 'to-left' : 'to-right'}`}>
               {/* 내려받기·우클릭 저장은 막는다. */}
               <video
-                src="/dance.mp4"
+                key={playing}
+                src={playing === 'bad' ? '/dance.mp4' : '/dance2.mp4'}
                 autoPlay
                 playsInline
                 controls
@@ -97,7 +107,7 @@ export default function Gate({ onDone }: Props) {
               <button
                 type="button"
                 className="dance-close"
-                onClick={() => setPlaying(false)}
+                onClick={() => setPlaying(null)}
                 aria-label="닫기"
               >
                 ✕
