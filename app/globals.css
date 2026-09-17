@@ -248,23 +248,45 @@ textarea { resize: vertical; min-height: 58px; display: block; }
 }
 .play-btn:hover { background: rgba(0, 0, 0, 0.88); }
 
-/* 캐릭터 위로 툭 튀어나오는 작은 플레이어. */
+/*
+ * 플레이어는 카드 왼쪽 빈 여백 한가운데에 띄운다.
+ * 폭은 그 여백이 허락하는 만큼만 쓰고, 여백이 좁아지면 아래 미디어 쿼리에서
+ * 예전처럼 캐릭터 위로 돌아간다. 테두리와 그림자는 두지 않는다.
+ */
 .dance-pop {
-  position: absolute; left: 50%; bottom: 10px; z-index: 3;
-  width: min(190px, 52vw); transform-origin: 50% 100%;
-  animation: dance-pop 0.34s cubic-bezier(0.18, 1.3, 0.4, 1) both;
+  position: fixed; z-index: 3;
+  left: calc((50vw - 210px) / 2);
+  top: 50%;
+  width: min(300px, calc(50vw - 240px));
+  transform: translate(-50%, -50%);
+  animation: dance-in 0.34s cubic-bezier(0.18, 1.3, 0.4, 1) both;
 }
 .dance-pop video {
-  width: 100%; display: block; border-radius: 14px;
-  border: 3px solid #fff; background: #000;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.32);
+  width: 100%; display: block;
+  border: 0; border-radius: 0; background: transparent;
 }
 .dance-close {
-  position: absolute; top: -10px; right: -10px;
-  width: 26px; height: 26px; border-radius: 50%;
-  border: 2px solid #fff; background: #000; color: #fff; font-size: 12px; line-height: 1; padding: 0;
+  position: absolute; top: -34px; right: 0;
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 0; background: rgba(0, 0, 0, 0.55); color: #fff;
+  font-size: 13px; line-height: 1; padding: 0;
 }
-@keyframes dance-pop {
-  from { transform: translate(-50%, 24px) scale(0.5); opacity: 0; }
-  to { transform: translate(-50%, 0) scale(1); opacity: 1; }
+.dance-close:hover { background: rgba(0, 0, 0, 0.8); }
+@keyframes dance-in {
+  from { transform: translate(-50%, calc(-50% + 18px)) scale(0.82); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* 왼쪽 여백이 사라지는 폭에서는 캐릭터 위에 겹쳐 띄운다. */
+@media (max-width: 900px) {
+  .dance-pop {
+    position: absolute; left: 50%; top: auto; bottom: 10px;
+    width: min(190px, 52vw);
+    animation-name: dance-up;
+  }
+  .dance-close { top: -12px; right: -6px; }
+  @keyframes dance-up {
+    from { transform: translate(-50%, 24px) scale(0.5); opacity: 0; }
+    to { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  }
 }
