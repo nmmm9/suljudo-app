@@ -73,13 +73,17 @@ export default function Gate({ onDone }: Props) {
           <img className="cover-char" src="/char.png" alt="" />
 
           {/* 캐릭터 양옆 재생 버튼 둘. 각각 다른 영상이 튀어나온다. */}
+          {/* 두 장을 겹쳐 두고 hover에서 바꾼다. 미리 받아두니 처음 올릴 때도 안 깜빡인다. */}
           <button
             type="button"
             className="play-btn left"
             onClick={() => setPlaying('bad')}
             aria-label="첫 번째 영상 재생"
           >
-            ▶
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="btn-idle" src="/btn-a.webp" alt="" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="btn-hover" src="/btn-a-hover.webp" alt="" />
           </button>
           <button
             type="button"
@@ -87,7 +91,10 @@ export default function Gate({ onDone }: Props) {
             onClick={() => setPlaying('dva')}
             aria-label="두 번째 영상 재생"
           >
-            ▶
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="btn-idle" src="/btn-b.webp" alt="" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="btn-hover" src="/btn-b-hover.webp" alt="" />
           </button>
 
           {playing && (
